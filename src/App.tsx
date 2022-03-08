@@ -26,19 +26,54 @@ function App() {
   });
 
   const [scenes, setScenes] = useState<ObsWebSocket.Scene[]>([]);
-  const [currentScene, setCurrentScene] = useState("");
-  const [micMuted, setMicMuted] = useState(false);
+  const [currentSceneName, setCurrentSceneName] = useState("");
+  const currentScene = scenes.find((scene) => scene.name === currentSceneName);
 
   useEffect(() => {
     obs.current.on("SwitchScenes", ({ "scene-name": name }) => {
-      setCurrentScene(name);
+      setCurrentSceneName(name);
     });
     obs.current.on("SourceMuteStateChanged", ({ sourceName, muted }) => {
-      switch (sourceName) {
-        case "mic":
-          setMicMuted(muted);
-      }
+      setScenes((scenes) =>
+        scenes.map((scene) => ({
+          ...scene,
+          sources: scene.sources.map((source) =>
+            source.name === sourceName
+              ? {
+                  ...source,
+                  muted,
+                }
+              : source
+          ),
+        }))
+      );
     });
+    obs.current.on(
+      "SceneItemVisibilityChanged",
+      ({
+        "scene-name": sceneName,
+        "item-name": itemName,
+        "item-visible": visible,
+      }) => {
+        setScenes((scenes) =>
+          scenes.map((scene) =>
+            scene.name === sceneName
+              ? {
+                  ...scene,
+                  sources: scene.sources.map((source) =>
+                    source.name === itemName
+                      ? {
+                          ...source,
+                          render: visible,
+                        }
+                      : source
+                  ),
+                }
+              : scene
+          )
+        );
+      }
+    );
   }, []);
 
   const onClickConnect = async () => {
@@ -60,9 +95,7 @@ function App() {
     const { scenes } = await obs.current.send("GetSceneList");
     setScenes(scenes);
     const { name } = await obs.current.send("GetCurrentScene");
-    setCurrentScene(name);
-    const { muted } = await obs.current.send("GetMute", { source: "mic" });
-    setMicMuted(muted);
+    setCurrentSceneName(name);
   };
 
   const onClickDisconnect = () => {
@@ -77,8 +110,10 @@ function App() {
     obs.current.send("SetCurrentScene", { "scene-name": name });
   };
 
-  const toggleMic = () => {
-    obs.current.send("SetMute", { source: "mic", mute: !micMuted });
+  const toggleSourceMute = (sourceName: string) => {
+    obs.current.send("ToggleMute", {
+      source: sourceName,
+    });
   };
 
   return (
@@ -92,7 +127,7 @@ function App() {
             Disconnect
           </button>
           <div>
-            <h1 className="text-xl my-2">{currentScene}</h1>
+            <h1 className="text-xl my-2">{currentScene?.name}</h1>
             {scenes.map((scene) => (
               <button
                 key={scene.name}
@@ -102,18 +137,30 @@ function App() {
                 {scene.name}
               </button>
             ))}
-            <label>
-              <span className="block my-2 text-sm font-medium text-slate-700  mr-1">
-                Mic
-              </span>
-              <button className="text-xl" onClick={() => toggleMic()}>
-                {micMuted ? (
-                  <VolumeXMarkSolid className="w-[20px] text-red-600 fill-current" />
-                ) : (
-                  <VolumeHighSolid className="w-[22px]" />
-                )}
-              </button>
-            </label>
+            {currentScene?.sources
+              .filter(
+                ({ type }) =>
+                  type === "coreaudio_input_capture" ||
+                  type === "coreaudio_output_capture"
+              )
+              .map((source) => (
+                <label key={source.name}>
+                  <span className="block my-2 text-sm font-medium text-slate-700  mr-1">
+                    {source.name}
+                  </span>
+                  <button
+                    className="group text-xl "
+                    disabled={!source.render}
+                    onClick={() => toggleSourceMute(source.name)}
+                  >
+                    {source.muted ? (
+                      <VolumeXMarkSolid className="w-[20px] text-red-600 group-disabled:text-gray-400 fill-current" />
+                    ) : (
+                      <VolumeHighSolid className="w-[22px] group-disabled:text-gray-400 fill-current" />
+                    )}
+                  </button>
+                </label>
+              ))}
           </div>
         </>
       ) : (
