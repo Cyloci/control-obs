@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import ObsWebSocket from "obs-websocket-js";
 import useLocalStorage from "./hooks/useLocalStorage";
+import VolumeHighSolid from "./assets/volume-high-solid.svg?component";
+import VolumeXMarkSolid from "./assets/volume-xmark-solid.svg?component";
 
 type ConnectionState =
   | {
@@ -25,10 +27,17 @@ function App() {
 
   const [scenes, setScenes] = useState<ObsWebSocket.Scene[]>([]);
   const [currentScene, setCurrentScene] = useState("");
+  const [micMuted, setMicMuted] = useState(false);
 
   useEffect(() => {
     obs.current.on("SwitchScenes", ({ "scene-name": name }) => {
       setCurrentScene(name);
+    });
+    obs.current.on("SourceMuteStateChanged", ({ sourceName, muted }) => {
+      switch (sourceName) {
+        case "mic":
+          setMicMuted(muted);
+      }
     });
   }, []);
 
@@ -52,6 +61,8 @@ function App() {
     setScenes(scenes);
     const { name } = await obs.current.send("GetCurrentScene");
     setCurrentScene(name);
+    const { muted } = await obs.current.send("GetMute", { source: "mic" });
+    setMicMuted(muted);
   };
 
   const onClickDisconnect = () => {
@@ -64,6 +75,10 @@ function App() {
 
   const onClickSceneName = (name: string) => {
     obs.current.send("SetCurrentScene", { "scene-name": name });
+  };
+
+  const toggleMic = () => {
+    obs.current.send("SetMute", { source: "mic", mute: !micMuted });
   };
 
   return (
@@ -87,6 +102,18 @@ function App() {
                 {scene.name}
               </button>
             ))}
+            <label>
+              <span className="block my-2 text-sm font-medium text-slate-700  mr-1">
+                Mic
+              </span>
+              <button className="text-xl" onClick={() => toggleMic()}>
+                {micMuted ? (
+                  <VolumeXMarkSolid className="w-[20px] text-red-600 fill-current" />
+                ) : (
+                  <VolumeHighSolid className="w-[22px]" />
+                )}
+              </button>
+            </label>
           </div>
         </>
       ) : (
