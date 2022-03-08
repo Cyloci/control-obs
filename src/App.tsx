@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ObsWebSocket from "obs-websocket-js";
 import useLocalStorage from "./hooks/useLocalStorage";
 
@@ -24,6 +24,13 @@ function App() {
   });
 
   const [scenes, setScenes] = useState<ObsWebSocket.Scene[]>([]);
+  const [currentScene, setCurrentScene] = useState<string>();
+
+  useEffect(() => {
+    obs.current.on("SwitchScenes", ({ "scene-name": name }) => {
+      setCurrentScene(name);
+    });
+  }, []);
 
   const onClickConnect = async () => {
     try {
@@ -43,6 +50,8 @@ function App() {
     }
     const { scenes } = await obs.current.send("GetSceneList");
     setScenes(scenes);
+    const { name } = await obs.current.send("GetCurrentScene");
+    setCurrentScene(name);
   };
 
   const onClickDisconnect = () => {
@@ -69,6 +78,7 @@ function App() {
             Disconnect
           </button>
           <div>
+            <h1 className="text-x1 my-2">{currentScene}</h1>
             {scenes.map((scene) => (
               <button
                 key={scene.name}
