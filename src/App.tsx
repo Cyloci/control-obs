@@ -24,7 +24,7 @@ function App() {
   });
 
   const [scenes, setScenes] = useState<ObsWebSocket.Scene[]>([]);
-  const [currentScene, setCurrentScene] = useState<string>();
+  const [currentScene, setCurrentScene] = useState("");
 
   useEffect(() => {
     obs.current.on("SwitchScenes", ({ "scene-name": name }) => {
@@ -60,7 +60,6 @@ function App() {
     setConnectionState({
       kind: "disconnected",
     });
-    setScenes([]);
   };
 
   const onClickSceneName = (name: string) => {
@@ -78,7 +77,7 @@ function App() {
             Disconnect
           </button>
           <div>
-            <h1 className="text-x1 my-2">{currentScene}</h1>
+            <h1 className="text-xl my-2">{currentScene}</h1>
             {scenes.map((scene) => (
               <button
                 key={scene.name}
