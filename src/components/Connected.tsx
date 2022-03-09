@@ -63,30 +63,24 @@ const Connected = ({
             {scene.name}
           </button>
         ))}
-        {currentScene.sources
-          .filter(
-            ({ type }) =>
-              type === "coreaudio_input_capture" ||
-              type === "coreaudio_output_capture"
-          )
-          .map((source) => (
-            <label key={source.name}>
-              <span className="block my-2 text-sm font-medium text-slate-700  mr-1">
-                {source.name}
-              </span>
-              <button
-                className="group text-xl "
-                disabled={!source.render}
-                onClick={() => toggleSourceMute(source.name)}
-              >
-                {source.muted ? (
-                  <VolumeXMarkSolid className="w-[20px] text-red-600 group-disabled:text-gray-400 fill-current" />
-                ) : (
-                  <VolumeHighSolid className="w-[22px] group-disabled:text-gray-400 fill-current" />
-                )}
-              </button>
-            </label>
-          ))}
+        {currentScene.sources.map((source) => (
+          <label key={source.name}>
+            <span className="block my-2 text-sm font-medium text-slate-700  mr-1">
+              {source.name}
+            </span>
+            <button
+              className="group text-xl "
+              disabled={!source.render}
+              onClick={() => toggleSourceMute(source.name)}
+            >
+              {source.muted ? (
+                <VolumeXMarkSolid className="w-[20px] text-red-600 group-disabled:text-gray-400 fill-current" />
+              ) : (
+                <VolumeHighSolid className="w-[22px] group-disabled:text-gray-400 fill-current" />
+              )}
+            </button>
+          </label>
+        ))}
       </div>
     </div>
   );

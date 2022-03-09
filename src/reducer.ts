@@ -62,10 +62,12 @@ export const reducer = (
       break;
     case "setSourceMuteState":
       for (const scene of state.scenes) {
-        const source = mustFind(
-          scene.sources,
+        const source = scene.sources.find(
           (source) => source.name === action.payload.sourceName
         );
+        if (!source) {
+          continue;
+        }
         source.muted = action.payload.muted;
       }
       break;
