@@ -3,7 +3,7 @@ import { mustFind } from "./utils";
 
 export type ObsState = {
   scenes: ObsWebSocket.Scene[];
-  currentSceneName: string | number;
+  currentSceneName: string;
 };
 
 export type ConnectionState =
