@@ -38,6 +38,12 @@ function App() {
         });
       }
     );
+    obs.current.on("SourceVolumeChanged", ({ sourceName, volume }) => {
+      dispatch({
+        kind: "setSourceVolume",
+        payload: { sourceName, volume },
+      });
+    });
   }, []);
 
   return (

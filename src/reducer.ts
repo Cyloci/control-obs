@@ -43,6 +43,13 @@ export type Action =
         sourceName: string;
         visible: boolean;
       };
+    }
+  | {
+      kind: "setSourceVolume";
+      payload: {
+        sourceName: string;
+        volume: number;
+      };
     };
 
 export const reducer = (
@@ -80,6 +87,17 @@ export const reducer = (
         (source) => source.name === action.payload.sourceName
       );
       source.render = action.payload.visible;
+      break;
+    case "setSourceVolume":
+      for (const scene of state.scenes) {
+        const source = scene.sources.find(
+          (source) => source.name === action.payload.sourceName
+        );
+        if (!source) {
+          continue;
+        }
+        source.volume = action.payload.volume;
+      }
       break;
   }
   return draft;

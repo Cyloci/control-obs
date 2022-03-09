@@ -31,6 +31,13 @@ const Connected = ({
     });
   };
 
+  const onChangeVolume = (sourceName: string, volume: number) => {
+    obs.current.send("SetVolume", {
+      source: sourceName,
+      volume,
+    });
+  };
+
   const onClickDisconnect = () => {
     obs.current.disconnect();
     console.info("disconnected from OBS");
@@ -69,7 +76,7 @@ const Connected = ({
               {source.name}
             </span>
             <button
-              className="group text-xl "
+              className="group text-xl mr-4"
               disabled={!source.render}
               onClick={() => toggleSourceMute(source.name)}
             >
@@ -79,6 +86,16 @@ const Connected = ({
                 <VolumeHighSolid className="w-[22px] group-disabled:text-gray-400 fill-current" />
               )}
             </button>
+            <input
+              type="range"
+              value={source.volume}
+              min={0}
+              max={1}
+              step={0.01}
+              onChange={(e) =>
+                onChangeVolume(source.name, parseFloat(e.target.value))
+              }
+            />
           </label>
         ))}
       </div>
