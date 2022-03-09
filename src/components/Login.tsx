@@ -33,8 +33,8 @@ const Login = ({ errorMessage, obs, dispatch }: LoginProps) => {
       });
       return;
     }
-    const { scenes } = await obs.current.send("GetSceneList");
-    const { name } = await obs.current.send("GetCurrentScene");
+    const { scenes, "current-scene": currentSceneName } =
+      await obs.current.send("GetSceneList");
     dispatch({
       kind: "setConnectionState",
       payload: {
@@ -42,7 +42,7 @@ const Login = ({ errorMessage, obs, dispatch }: LoginProps) => {
           kind: "connected",
           obsState: {
             scenes,
-            currentSceneName: name,
+            currentSceneName,
           },
         },
       },
