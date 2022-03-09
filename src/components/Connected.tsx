@@ -1,6 +1,8 @@
 import { Action, ObsState } from "../reducer";
 import VolumeHighSolid from "../assets/volume-high-solid.svg?component";
 import VolumeXMarkSolid from "../assets/volume-xmark-solid.svg?component";
+import EyeSolid from "../assets/eye-solid.svg?component";
+import EyeSlashSolid from "../assets/eye-slash-solid.svg?component";
 import { mustFind } from "../utils";
 import ObsWebSocket from "obs-websocket-js";
 import { Dispatch, MutableRefObject } from "react";
@@ -28,6 +30,13 @@ const Connected = ({
   const toggleSourceMute = (sourceName: string) => {
     obs.current.send("ToggleMute", {
       source: sourceName,
+    });
+  };
+
+  const setSourceVisible = (sourceName: string, visible: boolean) => {
+    obs.current.send("SetSceneItemRender", {
+      source: sourceName,
+      render: visible,
     });
   };
 
@@ -76,14 +85,23 @@ const Connected = ({
               {source.name}
             </span>
             <button
-              className="group text-xl mr-4"
-              disabled={!source.render}
+              className="group text-xl w-6 mr-4"
+              onClick={() => setSourceVisible(source.name, !source.render)}
+            >
+              {source.render ? (
+                <EyeSolid className="w-[20px] fill-current" />
+              ) : (
+                <EyeSlashSolid className="w-[22px] text-gray-400 fill-current" />
+              )}
+            </button>
+            <button
+              className="group text-xl w-6 mr-4"
               onClick={() => toggleSourceMute(source.name)}
             >
               {source.muted ? (
-                <VolumeXMarkSolid className="w-[20px] text-red-600 group-disabled:text-gray-400 fill-current" />
+                <VolumeXMarkSolid className="w-[20px] text-red-600 fill-current" />
               ) : (
-                <VolumeHighSolid className="w-[22px] group-disabled:text-gray-400 fill-current" />
+                <VolumeHighSolid className="w-[22px] fill-current" />
               )}
             </button>
             <input
