@@ -1,66 +1,32 @@
-import { useEffect, useRef } from "react";
-import ObsWebSocket from "obs-websocket-js";
-import { useImmerReducer } from "use-immer";
-import { ConnectionState, reducer } from "./reducer";
-import Login from "./components/Login";
-import Connected from "./components/Connected";
+import { useState } from "react";
+import reactLogo from "./assets/react.svg";
+import "./App.css";
 
 function App() {
-  const obs = useRef(new ObsWebSocket());
-
-  const [connectionState, dispatch] = useImmerReducer(reducer, {
-    kind: "loggingIn",
-  } as ConnectionState);
-
-  useEffect(() => {
-    obs.current.on("SwitchScenes", ({ "scene-name": name }) => {
-      dispatch({
-        kind: "setCurrentSceneName",
-        payload: { name },
-      });
-    });
-    obs.current.on("SourceMuteStateChanged", ({ sourceName, muted }) => {
-      dispatch({
-        kind: "setSourceMuteState",
-        payload: { sourceName, muted },
-      });
-    });
-    obs.current.on(
-      "SceneItemVisibilityChanged",
-      ({
-        "scene-name": sceneName,
-        "item-name": itemName,
-        "item-visible": visible,
-      }) => {
-        dispatch({
-          kind: "setSourceVisibilty",
-          payload: { sceneName, sourceName: itemName, visible },
-        });
-      }
-    );
-    obs.current.on("SourceVolumeChanged", ({ sourceName, volume }) => {
-      dispatch({
-        kind: "setSourceVolume",
-        payload: { sourceName, volume },
-      });
-    });
-  }, []);
+  const [count, setCount] = useState(0);
 
   return (
-    <div className="p-5">
-      {connectionState.kind === "connected" ? (
-        <Connected
-          state={connectionState.obsState}
-          obs={obs}
-          dispatch={dispatch}
-        />
-      ) : (
-        <Login
-          errorMessage={connectionState.errorMessage}
-          obs={obs}
-          dispatch={dispatch}
-        />
-      )}
+    <div className="App">
+      <div>
+        <a href="https://vitejs.dev" target="_blank">
+          <img src="/vite.svg" className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://reactjs.org" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.tsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
     </div>
   );
 }
